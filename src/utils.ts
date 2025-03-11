@@ -1,6 +1,5 @@
 export const getStorageUrl = (region: string | undefined) => {
-  if (!region) {return 'storage.bunnycdn.com'}
-  return `${region}.storage.bunnycdn.com`
+  return region ? `${region}.storage.bunnycdn.com` : 'storage.bunnycdn.com'
 }
 
 export const getVideoId = (doc: unknown, filename: string) => {

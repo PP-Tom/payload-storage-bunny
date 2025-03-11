@@ -1,10 +1,9 @@
+import type { BunnyAdapterOptions } from './types.js'
 import type { StaticHandler } from '@payloadcms/plugin-cloud-storage/types'
 import type { CollectionConfig } from 'payload'
 
 import ky, { HTTPError } from 'ky'
-import { posix } from 'node:path'
-
-import type { BunnyAdapterOptions } from './types.js'
+import path from 'path'
 
 import { getStorageUrl, getVideoId } from './utils.js'
 
@@ -20,35 +19,9 @@ export const getStaticHandler = ({
     try {
       let videoId = getVideoId(doc, filename)
 
-      if (!videoId) {
-        const doc = (await req.payload.find({
-          collection: collection.slug,
-          limit: 1,
-          where: {
-            bunnyVideoId: {
-              exists: true,
-            },
-            filename: {
-              equals: filename,
-            },
-          },
-        })) as unknown as { docs: { bunnyVideoId: string }[] }
-
-        if (doc.docs.length === 0) {
-          return new Response('Not Found', { status: 404 })
-        }
-
-        videoId = doc.docs[0].bunnyVideoId
-      }
-
       if (stream && videoId) {
-        if (!stream.mp4FallbackQuality) {
-          return new Response('MP4 fallback quality not configured', { status: 400 })
-        }
-
-        const mp4Url = `https://${stream.hostname}/${videoId}/play_${stream.mp4FallbackQuality}.mp4`
-        req.payload.logger.info(mp4Url)
-        const response = await ky.get(mp4Url)
+        const url = `https://${stream.hostname}/${videoId}/playlist.m3u8`
+        const response = await ky.get(url)
 
         if (!response.ok) {
           return new Response(null, { status: 404, statusText: 'Not Found' })
@@ -57,14 +30,14 @@ export const getStaticHandler = ({
         return new Response(response.body, {
           headers: new Headers({
             'content-length': response.headers.get('Content-Length') || '',
-            'content-type': 'video/mp4',
+            'content-type': 'application/vnd',
           }),
           status: 200,
         })
       }
 
       const response = await ky.get(
-        `https://${getStorageUrl(storage.region)}/${storage.zoneName}/${posix.join(prefix, filename)}`,
+        `https://${getStorageUrl(storage.region)}/${storage.zoneName}/${path.posix.join(prefix, filename)}`,
         {
           headers: {
             AccessKey: storage.apiKey,

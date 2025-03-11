@@ -1,10 +1,9 @@
+import type { BunnyAdapterOptions } from './types.js'
 import type { HandleUpload } from '@payloadcms/plugin-cloud-storage/types'
 
 import ky, { HTTPError } from 'ky'
-import { posix } from 'node:path'
 import { APIError } from 'payload'
-
-import type { BunnyAdapterOptions } from './types.js'
+import path from 'path'
 
 import { getStorageUrl } from './utils.js'
 
@@ -17,7 +16,7 @@ export const getHandleUpload = ({ prefix, storage, stream }: Args): HandleUpload
 
     try {
       const fileName = file.filename
-      const filePath = posix.join(prefix || '', fileName)
+      const filePath = path.posix.join(prefix || '', fileName)
       const isVideoFile = file.mimeType.startsWith('video/')
 
       if (stream && isVideoFile) {

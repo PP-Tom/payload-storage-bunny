@@ -1,10 +1,9 @@
+import type { BunnyAdapterOptions } from './types.js'
 import type { HandleDelete } from '@payloadcms/plugin-cloud-storage/types'
 
 import ky, { HTTPError } from 'ky'
-import { posix } from 'node:path'
 import { APIError } from 'payload'
-
-import type { BunnyAdapterOptions } from './types.js'
+import path from 'path'
 
 import { getStorageUrl, getVideoId } from './utils.js'
 
@@ -25,7 +24,7 @@ export const getHandleDelete = ({ storage, stream }: BunnyAdapterOptions): Handl
           },
         )
       } else {
-        const filePath = posix.join(doc.prefix || '', filename)
+        const filePath = path.posix.join(doc.prefix || '', filename)
 
         await ky.delete(
           `https://${getStorageUrl(storage.region)}/${storage.zoneName}/${filePath}`,
